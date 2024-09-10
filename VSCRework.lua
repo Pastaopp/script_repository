@@ -53,13 +53,17 @@ task.spawn(function()
           }))
       end)
 
-      WebSocketInstance.OnMessage:Connect(function(msg)
-        local json = HttpService:JSONDecode(msg)
-        if json.type == "run_luas" then
-          for _, lua in pairs(json.data.luas) do
-            loadstring(lua)()
-          end
-        end
+      -- another error
+      local preventErrs, preventErrs2 = pcall(function()
+          print("--------------------------------------------------------- Wow i just prevented once again, another useless error.")
+          WebSocketInstance.OnMessage:Connect(function(msg)
+            local json = HttpService:JSONDecode(msg)
+            if json.type == "run_luas" then
+              for _, lua in pairs(json.data.luas) do
+                loadstring(lua)()
+              end
+            end
+          end)
       end)
 
       WebSocketInstance.OnClose:Wait()
