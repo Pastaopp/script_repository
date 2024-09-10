@@ -136,13 +136,28 @@ function Library:New(EspName, item, displayText, customizable, highlightSettings
 
     coroutine.wrap(update)()
 
-
-    table.insert(Library.ESP, {
+    local tbl = {
         Name = EspName;
         TxT = textLabel;
         Tracer = tracer;
         highlight = Highlight;
-    })
+    }
+
+    local function getIndex(tbl)
+        for index, value in ipairs(Library.ESP) do
+            if value == tbl then
+                return index
+            end
+        end
+
+        return nil
+    end
+
+    table.insert(Library.ESP, tbl)
+
+    if getIndex(tbl) then
+        return Library.ESP[getIndex(tbl)]
+    end
 end
 
 --[[
