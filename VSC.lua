@@ -5,6 +5,8 @@ if not game:IsLoaded() then
   game.Loaded:Wait()
 end
 
+local ERRCount = 0
+
 print("I <3 nitrog0d\nWow,Wow-Wow-Wow,Wow");
 
 local HttpService = game:GetService("HttpService")
@@ -55,9 +57,14 @@ task.spawn(function()
 
       -- another error
       local preventErrs, preventErrs2 = pcall(function()
-          print("--------------------------------------------------------- Wow i just prevented once again, another useless error.")
+          print("Count >> " .. tostring(ERRCount))
+          ERRCount += 1
           WebSocketInstance.OnMessage:Connect(function(msg)
-            local json = HttpService:JSONDecode(msg)
+            local json;
+            local success, result = pcall(function()
+                json = HttpService:JSONDecode(msg)
+            end)
+                  
             if json.type == "run_luas" then
               for _, lua in pairs(json.data.luas) do
                 loadstring(lua)()
