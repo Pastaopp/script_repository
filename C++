@@ -57,8 +57,10 @@ task.spawn(function()
 
       -- another error
       local preventErrs, preventErrs2 = pcall(function()
-          print("Count >> " .. tostring(ERRCount))
-          ERRCount += 1
+            local __check = (ERRCount < 3) and pcall(function()
+                ERRCount += 1
+                print("Count >> " .. tostring(ERRCount))
+            end) or (ERRCount >= 3 and warn("\nERR count has reached the limit, either false or idk"))
           WebSocketInstance.OnMessage:Connect(function(msg)
             local json;
             local success, result = pcall(function()
