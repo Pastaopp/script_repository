@@ -1,2 +1,2 @@
-# script_repository
-Would you run a solara script and get ratted? | Nah, i'd get my info stolen.
+# Script Repository
+Welcome to the Script Repository, the complete loadstrings will be inside SCRIPT_LOADSTRINGS.lua, everything else is about creating the scripts :)
