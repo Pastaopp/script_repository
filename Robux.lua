@@ -314,13 +314,13 @@ end
 
 local Tabs = {
     Main = Window:AddTab('Main'),
-    Shop = Window:AddTab('Game Shop'),
+    Servers = Window:AddTab('Servers'),
     OtherScripts = Window:AddTab('Other Games')
 }
 
 local LeftGroupBox = Tabs.Main:AddLeftGroupbox('Cheats')
 --local RightGroupBox = Tabs.Main:AddRightGroupBox('Features Soon')
-local LeftGroupBox_1 = Tabs.Shop:AddLeftGroupbox('Coming Soon')
+local LeftGroupBox_1 = Tabs.Servers:AddLeftGroupbox('Main')
 local LeftGroupBox_2 = Tabs.OtherScripts:AddLeftGroupbox('Coming Soon!')
 
 LeftGroupBox_2:AddLabel('Supported : Evade')
@@ -335,15 +335,35 @@ LeftGroupBox_2:AddLabel('Current Game Name : ' .. (
 ))
 
 LeftGroupBox:AddLabel(
-    '[1] Current Game Id:'..tostring(game.GameId)..
-    '\n[2] Current Job Id:'..tostring(game.JobId)..
-    '\n[3] Game Version:'..math.floor(game.PlaceVersion / 100)..
+    '[1] Current Game Id:'..tostring(
+        game.GameId
+    )..
+    '\n[2] Current Job Id:'..tostring(
+        game.JobId
+    )..
+    '\n[3] Game Version:'..math.floor(
+        game.PlaceVersion / 100
+    )..
+
     '.'..
-    (math.floor(game.PlaceVersion / 10) % 10)..
+
+    (
+        math.floor(
+            game.PlaceVersion / 10)
+             % 10
+        )..
     '.'..
-    math.floor(game.PlaceVersion % 10)..
-    '\n[4] Player Amount:'..tostring(#Players:GetPlayers())..
-    "\n", true)
+
+    math.floor(
+        game.PlaceVersion % 10
+    )..
+
+    '\n[4] Player Amount:'..tostring(
+        #Players:GetPlayers()
+    )..
+    "", 
+    true
+)
 
 
 --local PlaceName = game:GetService("MarketplaceService"):GetProductInfo(
@@ -360,15 +380,9 @@ coroutine.wrap(function()
     LeftGroupBox:AddLabel("Points : " .. game:GetService("Players").LocalPlayer.PlayerGui.Menu.Left.Points.Cash.Text)
 end)()
 
-local CanUseJobIDTeleporter
+local CanUseJobIDTeleporter = true -- sad if you can't use it!
 
-if string.find(identifyexecutor():lower(), "solara") == false then
-    CanUseJobIDTeleporter = true
-else
-    CanUseJobIDTeleporter = false
-end
-
-LeftGroupBox:AddButton({
+LeftGroupBox_1:AddButton({
     Text = 'Copy Job Id',
     Func = function()
         setclipboard(tostring(game.JobId))
@@ -404,12 +418,12 @@ LeftGroupBox:AddButton({
 
 if CanUseJobIDTeleporter then
     
-    LeftGroupBox:AddInput('tpForJobid', {
-        Default = 'Tp To JobId',
+    LeftGroupBox_1:AddInput('tpForJobid', {
+        Default = '[type jobid here]',
         Numeric = false,
         Finished = true,
     
-        Text = 'Teleport to a jobid (from other exploit servers or as a serverhop)',
+        Text = 'Teleport to a jobid',
         Tooltip = "Use this input to teleport to another exploit server/friend's server/etc.",
     
         Placeholder = '',
@@ -427,7 +441,7 @@ if CanUseJobIDTeleporter then
     local l__HttpService__l = game:GetService("HttpService")
     local A1 = game.PlaceId
 
-    LeftGroupBox:AddButton({
+    LeftGroupBox_1:AddButton({
         Text = 'Teleport Random Server',
         Func = function()
             local function A2()
@@ -436,22 +450,32 @@ if CanUseJobIDTeleporter then
                     Url = A3,
                     Method = "GET"
                 })
-
+            
                 if A4.StatusCode == 200 then
                     local A5 = l__HttpService__l:JSONDecode(A4.Body)
                     if #A5.data > 0 then
-                        local A6 = A5.data[math.random(1, #A5.data)]
-                        return A6.id
-                    else
-                        return nil
+                        for _, A6 in pairs(A5.data) do
+                            if A6.playing < A6.maxPlayers then
+                                return A6.id
+                            end
+                        end
                     end
+                    return nil -- Return nil if no non-full server is found
                 else
                     return nil
                 end
             end
-
+            
             local A7 = A2();
-            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, A7, LPLR)
+            if A7 ~= nil then
+                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, A7, LPLR)
+            else
+                game:GetService("StarterGui"):SetCore("SendNotification", {
+                    Title = "Teleporter",
+                    Text = "Servers not found.",
+                    Duration = 5
+                })
+            end                          
         end,
         DoubleClick = false,
         Tooltip = 'Tp to a random server :p'
