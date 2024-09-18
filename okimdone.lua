@@ -432,7 +432,7 @@ if CanUseJobIDTeleporter then
             warn("Job id test : " .. Value)
             local s,e = pcall(function()
                 game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, Value, LPLR)
-                queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/Pastaopp/script_repository/refs/heads/main/Robux.lua"))()')
+                queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/Pastaopp/script_repository/refs/heads/main/okimdone.lua"))()')
             end)
 
             print("result : ", s, e)
