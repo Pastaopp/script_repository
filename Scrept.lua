@@ -382,7 +382,7 @@ LeftGroupBox:AddButton({
     Tooltip = 'Copy Job Id to share or save server id'
 })
 
-LeftGroupBox:AddInput('tpForJobid', {
+--[[LeftGroupBox:AddInput('tpForJobid', {
     Default = 'Tp To JobId',
     Numeric = false,
     Finished = true,
@@ -400,17 +400,9 @@ LeftGroupBox:AddInput('tpForJobid', {
 
         print("result : ", s, e)
     end
-})
+})]]
 
 if CanUseJobIDTeleporter then
-    LeftGroupBox:AddButton({
-        Text = 'Copy Job Id',
-        Func = function()
-            setclipboard(tostring(game.JobId))
-        end,
-        DoubleClick = false,
-        Tooltip = 'Copy Job Id to share or save server id'
-    })
     
     LeftGroupBox:AddInput('tpForJobid', {
         Default = 'Tp To JobId',
@@ -435,29 +427,29 @@ if CanUseJobIDTeleporter then
     local l__HttpService__l = game:GetService("HttpService")
     local A1 = game.PlaceId
 
-    local function A2()
-        local A3 = "https://games.roblox.com/v1/games/" .. A1 .. "/servers/Public?limit=100"
-        local A4 = request({
-            Url = A3,
-            Method = "GET"
-        })
-        if A4.StatusCode == 200 then
-            local A5 = l__HttpService__l:JSONDecode(A4.Body)
-            if #A5.data > 0 then
-                local A6 = A5.data[math.random(1, #A5.data)]
-                return A6.id
-            else
-                return nil
-            end
-        else
-            return nil
-        end
-    end
-
-
     LeftGroupBox:AddButton({
         Text = 'Teleport Random Server',
         Func = function()
+            local function A2()
+                local A3 = "https://games.roblox.com/v1/games/" .. A1 .. "/servers/Public?limit=100"
+                local A4 = request({
+                    Url = A3,
+                    Method = "GET"
+                })
+
+                if A4.StatusCode == 200 then
+                    local A5 = l__HttpService__l:JSONDecode(A4.Body)
+                    if #A5.data > 0 then
+                        local A6 = A5.data[math.random(1, #A5.data)]
+                        return A6.id
+                    else
+                        return nil
+                    end
+                else
+                    return nil
+                end
+            end
+
             local A7 = A2();
             game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, A7, LPLR)
         end,
@@ -834,7 +826,7 @@ LeftGroupBox:AddLabel('Noclip'):AddKeyPicker('KeyPicker', {
     end
 })
 
-LeftGroupBox:AddLabel('cframecframecframe'):AddKeyPicker('KeyPicker', {    
+LeftGroupBox:AddLabel('CFrame Walking'):AddKeyPicker('KeyPicker', {    
     
     Default = 'B',
     SyncToggleState = false,
