@@ -3,6 +3,8 @@ if getgenv().Loaded then
 end
 
 local espnextbots = {}
+getgenv().Console = loadstring(game:HttpGet("https://raw.githubusercontent.com/notpoiu/Scripts/main/utils/console/main.lua"))() -- developed by upio :d
+
 
 function CreateESPTag(params)
 	local RunService = game:GetService("RunService")
@@ -145,23 +147,52 @@ end
 local RunService = game:GetService("RunService")
 local UserInput = game:GetService("UserInputService")
 
+-- Player default variables
+
+local LPLR = game.Players.LocalPlayer
+local Character,
+      YieldForCharacterCon = 
+      LPLR.Character,
+      LPLR.CharacterAdded
+
+YieldForCharacterCon:Wait(0.25)
+
 getgenv().Loaded = "YES!!!"
 getgenv().cfspeed = false
 getgenv().cframe_numspeed = 0.1
 getgenv().rabbit = false
 getgenv().rabbit_connection = nil
 
-getgenv().NextbotESP = false
+getgenv().NextbotESP = {};
 getgenv().FieldOfView = 60
 getgenv().CustomFOV = false
 
+local function findFirstChild(parent, childName)
+    if parent:FindFirstChild(childName) then
+        return parent:FindFirstChild(childName)
+    else
+        return parent
+    end
+end
+
 getgenv().Noclip = false
+getgenv().AdminTable = { -- Put your new alt names here too
+    [7350809687] = "Latteism_2024";
+}
+
+getgenv().PermissionLevel = 1
+
+for Iterator_Or_Index, v in pairs(getgenv().AdminTable) do
+    if LPLR.UserId == Iterator_Or_Index and LPLR.Name == v then
+        getgenv().PermissionLevel += 1 -- no need for else statements it'll be the same
+    end
+end
 
 
 
 --print"Hello":)
 local ScriptSettings = {
-    CFrameSpeed = {Min = 0.05, Default = 0.1, Maximum = 5}
+    CFrameSpeed = {Min = 0.05, Default = 0.1, Maximum = 7.5} -- Updated to 7.5 bcz why not'
 }
 
 local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
@@ -222,7 +253,7 @@ end)
 RS.Heartbeat:Connect(function() -- Updating toggles sometimes
     local __heart = RS.Heartbeat:Wait();
 
-    -- wawawawawaw12w
+    -- heartbeat yields
 
     if SpawnedPlayers:FindFirstChild(LocalPlayer.Name) then
         if getgenv().cfspeed and getgenv().cframe_numspeed then
@@ -236,44 +267,18 @@ RS.Heartbeat:Connect(function() -- Updating toggles sometimes
                     character:TranslateBy(hum.MoveDirection * tonumber(
                         getgenv().cframe_numspeed
                     ) * __heart * 10)
+                    task.wait(0.01);
                 else
                     character:TranslateBy(hum.MoveDirection * __heart * 10)
+                    task.wait(0.01);
                 end
             end
         end;
-
-        if getgenv().NextbotESP then
-            local CoreGuiHighlight
-            local function updateEsp()
-                for _, v in pairs(SpawnedPlayers:GetChildren()) do
-                    if isnextbot(v) then
-                        if not table.find(espnextbots, v.Name) then
-                            table.insert(espnextbots, v.Name)
-                            CreateESPTag({
-			                    Text = v.Name,
-			                    Part = v.PrimaryPart,
-			                    TextSize = 15,
-			                    TextColor = Color3.new(255,0,255),
-			                    BoxColor = Color3.new(0,0,255),
-			                    TracerColor = Color3.new(255,255,255),
-			                    TracerWidth = 3
-		                    }) 
-                        end
-                    end
-                end
-            end
-
-            updateEsp()
-            SpawnedPlayers.ChildAdded:Connect(function(c)
-                if getgenv().NextbotESP then
-                    updateEsp(c)
-                end
-            end)
-        end
         -- 1 : 70
         -- 2 : 120
         if getgenv().CustomFOV then
             game.Players.LocalPlayer.PlayerScripts.FOVAdjusters.Sprint.Value = getgenv().FieldOfView
+            -- i don't know what localscript causes the handling of FOV but let's just use this I guess :content
         end
 
         local function NoclipLoop()
@@ -293,7 +298,6 @@ RS.Heartbeat:Connect(function() -- Updating toggles sometimes
         end
 
         spawn(NoclipLoop);
-
     end
 end)
 
@@ -310,6 +314,12 @@ local LeftGroupBox = Tabs.Main:AddLeftGroupbox('Groupbox')
 
 --LeftGroupBox:AddLabel('Current Place Name : ' .. PlaceName)
 LeftGroupBox:AddLabel('Current Place Id : ' .. tostring(game.PlaceId))
+LeftGroupBox:AddLabel("Signed In As : " .. LPLR.Name)
+LeftGroupBox:AddLabel("Tokens : " .. game:GetService("Players").LocalPlayer.PlayerGui.Menu.Left.Tokens.Cash.Text)
+LeftGroupBox:AddLabel("Survivals : " .. game:GetService("Players").LocalPlayer.PlayerGui.Menu.Left.Survivals.Cash.Text)
+LeftGroupBox:AddLabel("Points : " .. game:GetService("Players").LocalPlayer.PlayerGui.Menu.Left.Points.Cash.Text)
+
+
 
 local FrameTimer = tick()
 local FrameCounter = 0;
@@ -355,23 +365,71 @@ LeftGroupBox:AddToggle('rabbit_mode', {
     end
 })
 
-LeftGroupBox:AddToggle('esp_nextbots', {
-    Text = 'ESP Nextbots [TOGGLE WHEN ROUND STARTS]',
-    Default = false, -- Default value (true / false)
-    Tooltip = 'me when Drawing.new', -- Information shown when you hover over the toggle
+LeftGroupBox:AddButton('esp_nextbots', {
+    Text = 'ESP Nextbots [Automatic]',
+    Tooltip = 'Automatic ESP that updates current NPCs and spawned ones.', -- Information shown when you hover over the toggle
+    DoubleClick = false
+    Func = function()
+        --if getgenv().NextbotESP then
+            local CoreGuiHighlight
+            local function updateEsp(c)
+                if isnextbot(c) then
+                    if not table.find(espnextbots, v.Name) then
+                        table.insert(espnextbots, v.Name)
+                        CreateESPTag({
+			                Text = v.Name,
+			                Part = v.PrimaryPart,
+			                TextSize = 15,
+			                TextColor = Color3.new(255,0,255),
+			                BoxColor = Color3.new(0,0,255),
+			                TracerColor = Color3.new(255,255,255),
+			                TracerWidth = 3
+		                }) 
+                    end
+                end
+            end
 
-    Callback = function(Value)
-        getgenv().NextbotESP = Value
+            for _, v in pairs(SpawnedPlayers:GetChildren()) do
+                updateEsp(v)
+            end
+
+            SpawnedPlayers.ChildAdded:Connect(function(c)
+                updateEsp(c)
+            end)
+        --end
     end
 })
 
-local MyButton = LeftGroupBox:AddButton({
-    Text = 'Clear ESP [fix]',
+local clear_esp = LeftGroupBox:AddButton({
+    Text = 'Clear ESP',
     Func = function()
         table.clear(espnextbots)
     end,
     DoubleClick = false,
     Tooltip = 'Click this button to clear ESP list (so it can ESP new bots)'
+})
+
+local no_fog = LeftGroupBox:AddButton({
+    Text = 'No Fog',
+    Func = function()
+        -- supposing theres an atmosphere
+        local serv = game:FindService("Lighting")
+        local atmosphere = findFirstChild(serv, "Atmosphere")
+
+        if atmosphere then
+            atmosphere.Density = 0
+            atmosphere.Glare = 0
+            atmosphere.Haze = 0
+            atmosphere.Color = Color3.fromRGB(255,255,255);
+            atmosphere.Decay = Color3.fromRGB(255,255,255);
+            getgenv().Console.custom_print(">>> succesfully set atmosphere's settings to unreadable.", "", Color3.fromRGB(220,220,170))
+        else
+            getgenv().Console.custom_print(">>> failed to find atmosphere or returned error, typeof atmosphere: " .. atmosphere .. ".", "", Color3.fromRGB(170,170,120))
+            return;
+        end
+    end,
+    DoubleClick = false,
+    Tooltip = 'Sets lightings fog to null :p'
 })
 
 LeftGroupBox:AddToggle('fov_toggle', {
@@ -387,7 +445,7 @@ LeftGroupBox:AddToggle('fov_toggle', {
 LeftGroupBox:AddToggle('123-.', {
     Text = 'Noclip',
     Default = false, -- Default value (true / false)
-    Tooltip = 'Hello Hello Hello', -- Information shown when you hover over the toggle
+    Tooltip = 'A noclip that is functional (bots can tp to you btw)', -- Information shown when you hover over the toggle
 
     Callback = function(Value)
         getgenv().Noclip = Value
