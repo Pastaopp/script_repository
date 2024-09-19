@@ -1,79 +1,72 @@
-assert(getgenv().Webhook, "Webhook url is not defined.")
-assert(getgenv().UID, "User ID is not defined")
+assert(getgenv().l__Webhook__l, "Webhook url is not defined.")
+assert(getgenv().A12, "User ID is not defined")
 
-local LogService = game:GetService("LogService")
-local HttpService = game:GetService("HttpService")
-local webhookUrl = getgenv().Webhook
+local l__LogService__l = game:GetService("LogService")
+local l__HttpService__l = game:GetService("HttpService")
+local A5 = getgenv().l__Webhook__l
 
--- User ID to ping in Discord
-local userIDToPing = getgenv().UID
+local A24 = getgenv().A12
 
--- Rate limit settings
-local rateLimitInterval = 1  -- Time window in seconds
-local maxErrors = 3  -- Maximum number of errors in the time window
-local errorTimestamps = {}  -- Table to track error timestamps
+local l__rateLimitInterval__l = 1
+local l__maxErrors__l = 3
+local l__errorTimestamps__l = {}
 
--- Function to create a new embed
-local function FormNewEmbed(info)
-    local newEmbed = {
-        ["title"] = info.title,
-        ["description"] = info.desc,
-        ["fields"] = info.fields,
-        ["footer"] = {["text"] = info.footer or "uncomplete"},
-        ["color"] = info.color or 16711680  -- Default to red if no color is provided
+local function l__FormNewEmbed__l(l__info__l)
+    local l__newEmbed__l = {
+        ["title"] = l__info__l.title,
+        ["description"] = l__info__l.desc,
+        ["fields"] = l__info__l.fields,
+        ["footer"] = {["text"] = l__info__l.footer or "uncomplete"},
+        ["color"] = l__info__l.color or 16711680
     }
 
-    return HttpService:JSONEncode({
-        ["embeds"] = {newEmbed}
+    return l__HttpService__l:JSONEncode({
+        ["embeds"] = {l__newEmbed__l}
     })
 end
 
--- Function to send the webhook
-local function SendNewHook(url, data)
-    local success, response = pcall(function()
+local function l__SendNewHook__l(l__url__l, l__data__l)
+    local l__success__l, l__response__l = pcall(function()
         return request({
-            Url = url,
+            Url = l__url__l,
             Method = "POST",
             Headers = {
                 ["Content-Type"] = "application/json"
             },
-            Body = data
+            Body = l__data__l
         })
     end)
 
-    if success then
+    if l__success__l then
         print("Webhook sent successfully.")
-        if type(response) == "table" then
-            print("Response table:", response)
+        if type(l__response__l) == "table" then
+            print("Response table:", l__response__l)
         else
-            print("Response:", response)
+            print("Response:", l__response__l)
         end
     else
         print("Failed to send webhook.")
-        if type(response) == "table" then
-            for key, value in pairs(response) do
-                print(key, value)
+        if type(l__response__l) == "table" then
+            for l__key__l, l__value__l in pairs(l__response__l) do
+                print(l__key__l, l__value__l)
             end
         else
-            print("Response:", response)
+            print("Response:", l__response__l)
         end
     end
 end
 
--- Function to handle log messages
-local function OnMessage(message, messageType)
-    if messageType == Enum.MessageType.MessageError then
-        local currentTime = os.time()
-        
-        -- Clean up old timestamps
-        for i = #errorTimestamps, 1, -1 do
-            if errorTimestamps[i] < currentTime - rateLimitInterval then
-                table.remove(errorTimestamps, i)
+local function l__OnMessage__l(l__message__l, l__messageType__l)
+    if l__messageType__l == Enum.MessageType.MessageError then
+        local l__currentTime__l = os.time()
+
+        for l__i__l = #l__errorTimestamps__l, 1, -1 do
+            if l__errorTimestamps__l[l__i__l] < l__currentTime__l - l__rateLimitInterval__l then
+                table.remove(l__errorTimestamps__l, l__i__l)
             end
         end
-        
-        -- Check rate limit
-        if #errorTimestamps >= maxErrors then
+
+        if #l__errorTimestamps__l >= l__maxErrors__l then
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Rate Limit Triggered",
                 Text = "Too many errors detected in a short period. Notifications have been rate limited.",
@@ -82,35 +75,31 @@ local function OnMessage(message, messageType)
             return
         end
 
-        -- Add current error timestamp
-        table.insert(errorTimestamps, currentTime)
-        
-        local errorMessage = tostring(message)
+        table.insert(l__errorTimestamps__l, l__currentTime__l)
 
-        -- Filter to include only client-side errors (messages containing "[string ")
-        if errorMessage:match("%[string ") then
+        local l__errorMessage__l = tostring(l__message__l)
+
+        if l__errorMessage__l:match("%[string ") then
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "ErrorTracker",
                 Text = "Check the logs, a new error has been detected.",
                 Duration = 5
             })
             
-            -- Remove "Stack Begin" and "Stack End" lines
-            local cleanedErrorMessage = errorMessage:gsub("Stack Begin%s.-Stack End", "")
+            local l__cleanedErrorMessage__l = l__errorMessage__l:gsub("Stack Begin%s.-Stack End", "")
 
-            -- Extract the script info (one line)
-            local scriptInfo = errorMessage:match("Script '%[.-%]', Line %d+$") or "No script info"
+            local l__scriptInfo__l = l__errorMessage__l:match("Script '%[.-%]', Line %d+$") or "No script info"
 
-            local formattedDate = os.date("%Y-%m-%d %H:%M:%S", currentTime)
-            local dayOfWeek = os.date("%A", currentTime)
+            local l__formattedDate__l = os.date("%Y-%m-%d %H:%M:%S", l__currentTime__l)
+            local l__dayOfWeek__l = os.date("%A", l__currentTime__l)
 
-            local newEmbed = FormNewEmbed({
+            local l__newEmbed__l = l__FormNewEmbed__l({
                 ["title"] = "Error Detected!",
-                ["desc"] = "ErrorTracker has detected a new client-side error.\n\n<@" .. userIDToPing .. ">",
+                ["desc"] = "ErrorTracker has detected a new client-side error.\n\n<@" .. l__A24__l .. ">",
                 ["fields"] = {
                     {
                         ["name"] = "Error Message",
-                        ["value"] = "\n" .. cleanedErrorMessage,
+                        ["value"] = "\n" .. l__cleanedErrorMessage__l,
                         ["inline"] = true
                     },
                     {
@@ -120,12 +109,12 @@ local function OnMessage(message, messageType)
                     },
                     {
                         ["name"] = "Time",
-                        ["value"] = os.date("%H:%M:%S", currentTime),
+                        ["value"] = os.date("%H:%M:%S", l__currentTime__l),
                         ["inline"] = true
                     },
                     {
                         ["name"] = "Date of Error",
-                        ["value"] = formattedDate .. "\n\n" .. dayOfWeek,
+                        ["value"] = l__formattedDate__l .. "\n\n" .. l__dayOfWeek__l,
                         ["inline"] = true
                     },
                     {
@@ -135,18 +124,17 @@ local function OnMessage(message, messageType)
                     },
                     {
                         ["name"] = "Script Info",
-                        ["value"] = scriptInfo,
+                        ["value"] = l__scriptInfo__l,
                         ["inline"] = true
                     }
                 },
                 ["footer"] = "ErrorTracker",
-                ["color"] = 16711680  -- Red color
+                ["color"] = 16711680
             })
 
-            SendNewHook(webhookUrl, newEmbed)
+            l__SendNewHook__l(A5, l__newEmbed__l)
         end
     end
 end
 
--- Connect the function to the MessageOut event
-LogService.MessageOut:Connect(OnMessage)
+l__LogService__l.MessageOut:Connect(l__OnMessage__l)
