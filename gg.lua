@@ -1,3 +1,4 @@
+warn("Checking")
 assert(getgenv().Webhook, "Webhook url is not defined.")
 assert(getgenv().UID, "User ID is not defined")
 
@@ -57,7 +58,9 @@ local function SendNewHook(url, data)
 end
 
 local function OnMessage(message, messageType)
+    print("Received message: ", message) -- Added for debug
     if messageType == Enum.MessageType.MessageError then
+        print("Error detected!") -- Added for debug
         local currentTime = os.time()
 
         for i = #errorTimestamps, 1, -1 do
@@ -66,7 +69,7 @@ local function OnMessage(message, messageType)
             end
         end
 
-        if #errorTtimestamps >= maxErrors then
+        if #errorTimestamps >= maxErrors then
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Rate Limit Triggered",
                 Text = "Too many errors detected in a short period. Notifications have been rate limited.",
@@ -80,6 +83,7 @@ local function OnMessage(message, messageType)
         local errorMessage = tostring(message)
 
         if errorMessage:match("%[string ") then
+            print("Matched error message!") -- Added for debug
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "ErrorTracker",
                 Text = "Check the logs, a new error has been detected.",
