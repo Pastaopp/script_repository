@@ -1,5 +1,5 @@
 warn("Checking")
-assert(getgenv().Webhook, "Webhook url is not defined.")
+assert(getgenv().Webhook, "Webhook URL is not defined.")
 assert(getgenv().UID, "User ID is not defined")
 
 local LogService = game:GetService("LogService")
@@ -27,8 +27,8 @@ local function FormNewEmbed(info)
 end
 
 local function SendNewHook(url, data)
-    local success, response = pcall(function()
-        return request({
+    pcall(function()
+        request({
             Url = url,
             Method = "POST",
             Headers = {
@@ -37,30 +37,10 @@ local function SendNewHook(url, data)
             Body = data
         })
     end)
-
-    if success then
-        print("Webhook sent successfully.")
-        if type(response) == "table" then
-            print("Response table:", response)
-        else
-            print("Response:", response)
-        end
-    else
-        print("Failed to send webhook.")
-        if type(response) == "table" then
-            for key, value in pairs(response) do
-                print(key, value)
-            end
-        else
-            print("Response:", response)
-        end
-    end
 end
 
 local function OnMessage(message, messageType)
-    print("Received message: ", message) -- Added for debug
     if messageType == Enum.MessageType.MessageError then
-        print("Error detected!") -- Added for debug
         local currentTime = os.time()
 
         for i = #errorTimestamps, 1, -1 do
@@ -69,7 +49,7 @@ local function OnMessage(message, messageType)
             end
         end
 
-        if #errorTimestamps >= maxErrors then
+        if #errorTtimestamps >= maxErrors then
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Rate Limit Triggered",
                 Text = "Too many errors detected in a short period. Notifications have been rate limited.",
@@ -83,23 +63,22 @@ local function OnMessage(message, messageType)
         local errorMessage = tostring(message)
 
         if errorMessage:match("%[string ") then
-            print("Matched error message!") -- Added for debug
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "ErrorTracker",
                 Text = "Check the logs, a new error has been detected.",
                 Duration = 5
             })
-            
-            local cleanedErrorMessage = errorMessage:gsub("Stack Begin%s.-Stack End", "")
 
+            local cleanedErrorMessage = errorMessage:gsub("Stack Begin%s.-Stack End", "")
             local scriptInfo = errorMessage:match("Script '%[.-%]', Line %d+$") or "No script info"
 
             local formattedDate = os.date("%Y-%m-%d %H:%M:%S", currentTime)
             local dayOfWeek = os.date("%A", currentTime)
 
+            local player = game.Players.LocalPlayer
             local newEmbed = FormNewEmbed({
                 ["title"] = "Error Detected!",
-                ["desc"] = "ErrorTracker has detected a new client-side error.\n\n<@" .. userIDToPing .. ">",
+                ["desc"] = "ErrorTracker has detected a new client-side error.",
                 ["fields"] = {
                     {
                         ["name"] = "Error Message",
@@ -108,7 +87,22 @@ local function OnMessage(message, messageType)
                     },
                     {
                         ["name"] = "User ID",
-                        ["value"] = tostring(game.Players.LocalPlayer.UserId),
+                        ["value"] = tostring(player.UserId),
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Player Name",
+                        ["value"] = player.Name,
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Display Name",
+                        ["value"] = player.DisplayName,
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Account Age",
+                        ["value"] = tostring(player.AccountAge) .. " days",
                         ["inline"] = true
                     },
                     {
@@ -136,6 +130,11 @@ local function OnMessage(message, messageType)
                 ["color"] = 16711680
             })
 
+            local pingMessage = HttpService:JSONEncode({
+                content = "<@" .. userIDToPing .. "> A new error has been detected."
+            })
+
+            SendNewHook(webhookUrl, pingMessage)
             SendNewHook(webhookUrl, newEmbed)
         end
     end
